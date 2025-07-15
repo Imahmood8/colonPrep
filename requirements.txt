@@ -1,5 +1,5 @@
 Flask
 gunicorn
-tensorflow-lite
+tensorflow-cpu
 Pillow
 numpy
