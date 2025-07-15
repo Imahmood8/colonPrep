@@ -1,6 +1,7 @@
 import os
 from flask import Flask, request, jsonify
-import tensorflow as tf
+# THE FIX: Import the Interpreter from tflite_runtime instead of tensorflow
+from tflite_runtime.interpreter import Interpreter
 import numpy as np
 from PIL import Image
 import io
@@ -15,8 +16,8 @@ LABELS_PATH = "labels.txt"
 
 # --- Load the TFLite model and allocate tensors ---
 try:
-    # Use the core TensorFlow Lite Interpreter
-    interpreter = tf.lite.Interpreter(model_path=MODEL_PATH)
+    # THE FIX: Create the interpreter directly
+    interpreter = Interpreter(model_path=MODEL_PATH)
     interpreter.allocate_tensors()
     print("✅ Model loaded successfully.")
     
@@ -70,8 +71,6 @@ def predict():
         input_data = np.expand_dims(image, axis=0)
         
         # Normalize the image data to the format the model expects.
-        # This normalization (from [0, 255] to [-1, 1]) is common for MobileNet models.
-        # If you trained your model differently, you might need to change this.
         input_data = (np.float32(input_data) - 127.5) / 127.5
 
         # Set the value of the input tensor
@@ -89,9 +88,6 @@ def predict():
         top_label = labels[top_index]
         top_confidence = float(results[top_index])
         
-        # Return the result as a simple string that the Flutter app can display
-        # For a more advanced app, you might return JSON like this:
-        # return jsonify({'label': top_label, 'confidence': f"{top_confidence:.1%}"})
         return f"{top_label} ({top_confidence:.1%})"
 
     except Exception as e:
@@ -105,5 +101,4 @@ def health_check():
 
 # This part is for local testing. Render will use Gunicorn to run the app.
 if __name__ == '__main__':
-    # Use 0.0.0.0 to make it accessible on your local network
     app.run(host='0.0.0.0', port=5000, debug=True)
