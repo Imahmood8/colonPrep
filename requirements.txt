@@ -1,5 +1,5 @@
 Flask
 gunicorn
-tflite-runtime
+tensorflow-lite
 Pillow
 numpy
